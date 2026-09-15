@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Hunter</title>
+    <style>
+        :root {
+            --book-bg: #1a1622;
+            --page-bg: #f5f0e6;
+            --text-main: #2c241d;
+            --accent-gold: #c5a059;
+            --accent-purple: #4a2c40;
+            --border-color: #d3c5b4;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: #0b090e;
+            color: var(--page-bg);
+            font-family: "Georgia", "Yu Mincho", "Hiragino Mincho ProN", serif;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--book-bg);
+            border: 4px double var(--accent-gold);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-gold);
+            font-size: 1.7rem;
+            letter-spacing: 0.15em;
+            margin: 5px 0 0 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .sub-title {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #a39380;
+            margin-bottom: 15px;
+        }
+
+        .page-sheet {
+            background-color: var(--page-bg);
+            color: var(--text-main);
+            border-radius: 4px;
+            padding: 15px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+            min-height: 450px;
+            box-sizing: border-box;
+        }
+
+        .global-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .global-nav button {
+            background-color: #312430;
+            border: 1px solid var(--accent-gold);
+            color: #d3c5b4;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .global-nav button.active {
+            background-color: var(--accent-gold);
+            color: #1a1622;
+            font-weight: bold;
+        }
+
+        .tab-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .tab-menu {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            body { padding: 20px; }
+            .book-container { padding: 20px 30px; }
+            .page-sheet { padding: 25px; }
+            h1 { font-size: 2rem; }
+            .global-nav button { font-size: 0.9rem; padding: 8px 16px; }
+        }
+
+        .tab-menu h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent-purple);
+        }
+
+        button {
+            background-color: var(--accent-purple);
+            color: #fff;
+            border: 1px solid var(--accent-gold);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            background-color: #633a55;
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.6);
+        }
+
+        .btn-gold {
+            background-color: var(--accent-gold);
+            color: #1a1622;
+            font-weight: bold;
+        }
+        .btn-gold:hover {
+            background-color: #d4b26d;
+        }
+
+        .search-panel {
+            background: #ede5d5;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .search-panel {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 900px) {
+            .search-panel {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .search-panel input, .search-panel select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background: #fff;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table.skill-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        table.skill-table th, table.skill-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px 8px;
+            text-align: left;
+        }
+
+        table.skill-table th {
+            background-color: #e4d8c3;
+            color: #3b2e25;
+        }
+
+        table.skill-table tr:hover {
+            background-color: #f0e9dd;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .badge-master { background-color: #388e3c; color: white; }
+        .badge-learned { background-color: #1976d2; color: white; }
+        .badge-learning { background-color: #f57c00; color: white; }
+        .badge-none { background-color: #757575; color: white; }
+
+        .form-section {
+            margin-bottom: 20px;
+            border: 1px dashed var(--accent-gold);
+            padding: 12px;
+            border-radius: 4px;
+            background: #faf6ef;
+        }
+
+        @media (min-width: 600px) {
+            .form-section { padding: 15px; }
+        }
+
+        .form-section h3 {
+            margin-top: 0;
+            color: var(--accent-purple);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            font-size: 1.05rem;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: #4a3b32;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background: #fff;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 70px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+            background: #f0e9dd;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        @media (min-width: 600px) {
+            .grid-3 {
+                grid-template-columns: 2fr 1fr;
+                background: transparent;
+                padding: 0;
+            }
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        @media (min-width: 600px) {
+            .grid-5 {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .auto-calc-box {
+            background: #e4d8c3;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2c241d;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 600px) {
+            .action-buttons {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+        }
+
+        .hidden { display: none !important; }
+        
+        .settings-bar {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .settings-bar button {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+
+        .label-with-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            width: 90%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 3px solid var(--accent-gold);
+            box-shadow: 0 0 25px rgba(0,0,0,0.9);
+            box-sizing: border-box;
+        }
+
+        /* 分析ページ用スタイル */
+        .analytics-card {
+            background: #faf6ef;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .analytics-card h3 {
+            margin-top: 0;
+            color: var(--accent-purple);
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .chart-row {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            gap: 10px;
+        }
+        .chart-label {
+            width: 100px;
+            text-align: right;
+            color: #4a3b32;
+            flex-shrink: 0;
+        }
+        .chart-bar-track {
+            flex-grow: 1;
+            background: #e4d8c3;
+            border-radius: 4px;
+            height: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chart-bar-fill {
+            background-color: var(--accent-purple);
+            height: 100%;
+            border-radius: 4px 0 0 4px;
+            transition: width 0.4s ease;
+        }
+        .chart-bar-fill.gold {
+            background-color: var(--accent-gold);
+        }
+        .chart-value {
+            width: 45px;
+            font-weight: bold;
+            text-align: left;
+            flex-shrink: 0;
+        }
+        .clickable-item {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .clickable-item:hover {
+            background-color: #f0e9dd;
+            border-radius: 4px;
+        }
+        
+        /* 円グラフ・凡例用スタイル */
+        .pie-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        @media (min-width: 600px) {
+            .pie-container {
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 30px;
+            }
+        }
+        .pie-svg-wrapper {
+            width: 200px;
+            height: 200px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .pie-legend-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+        @media (min-width: 500px) {
+            .pie-legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .pie-legend-item {
+            background: #ede5d5;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .pie-color-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .analytics-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .analytics-controls select, .analytics-controls input {
+            padding: 6px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            font-size: 0.85rem;
+        }
+
+        /* 合成詳細ページ用カードスタイル */
+        .composite-skill-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .composite-skill-card.clickable-card {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .composite-skill-card.clickable-card:hover {
+            background-color: #f7f2ea;
+            box-shadow: 0 0 8px rgba(74, 44, 64, 0.2);
+            border-color: var(--accent-purple);
+        }
+        .composite-skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 6px;
+        }
+        .composite-skill-body p {
+            margin: 6px 0;
+            font-size: 0.9rem;
+        }
+        .composite-skill-score {
+            font-size: 0.85rem;
+            color: var(--accent-purple);
+            font-weight: bold;
+            background: #f0e9dd;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="book-container">
+    <h1>Skill Hunter</h1>
+    <div class="sub-title">－ 技能目録管理システム －</div>
+
+    <!-- グローバルナビゲーション -->
+    <div class="global-nav">
+        <button id="navIndexBtn" class="active" onclick="switchView('index')">目次・一覧</button>
+        <button id="navCompositeListBtn" onclick="switchView('compositeList')">⚡ 合成一覧</button>
+        <button id="navAnalyticsBtn" onclick="switchView('analytics')">📊 分析ページ</button>
+    </div>
+
+    <!-- メイン：目次（インデックス）画面 -->
+    <div id="indexView" class="page-sheet">
+        <div class="settings-bar">
+            <button onclick="openSettingsModal()">⚙ 分類・栞の設定</button>
+        </div>
+
+        <div class="tab-menu">
+            <h2>目次 / スキル一覧</h2>
+            <button class="btn-gold" onclick="openFormForNew()">＋ 新規スキルを登録</button>
+        </div>
+
+        <div class="search-panel">
+            <div>
+                <label>分類絞込</label>
+                <select id="filterCategory" onchange="renderIndex()">
+                    <option value="">すべての系統</option>
+                </select>
+            </div>
+            <div>
+                <label>合成名絞込</label>
+                <select id="filterComposite" onchange="renderIndex()">
+                    <option value="">すべての合成名</option>
+                </select>
+            </div>
+            <div>
+                <label>キーワード検索</label>
+                <input type="text" id="filterKeyword" placeholder="キーワードを入力..." oninput="renderIndex()">
+            </div>
+            <div>
+                <label>栞（しおり）絞込</label>
+                <select id="filterBookmark" onchange="renderIndex()">
+                    <option value="">すべての栞</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="skill-table">
+                <thead>
+                    <tr>
+                        <th>スキル名</th>
+                        <th>分類</th>
+                        <th>合成区分</th>
+                        <th>対象者</th>
+                        <th>習得判定</th>
+                        <th>栞</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="skillTableBody">
+                    <!-- JavaScriptで動的挿入 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 合成一覧画面 -->
+    <div id="compositeListView" class="page-sheet hidden">
+        <div class="tab-menu">
+            <h2>合成ページ一覧</h2>
+        </div>
+
+        <div class="search-panel" style="grid-template-columns: 1fr;">
+            <div>
+                <label>合成区分名で検索</label>
+                <input type="text" id="filterCompositeKeyword" placeholder="合成区分名を入力..." oninput="renderCompositeList()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="skill-table">
+                <thead>
+                    <tr>
+                        <th>合成区分名</th>
+                        <th>内能力数</th>
+                        <th>全体習得度</th>
+                        <th>主系統（最多）</th>
+                        <th>能力概要（メモ）</th>
+                    </tr>
+                </thead>
+                <tbody id="compositeTableBody">
+                    <!-- JavaScriptで動的挿入 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 合成詳細ページ画面 -->
+    <div id="compositeDetailView" class="page-sheet hidden">
+        <div class="tab-menu">
+            <h2 id="compositeDetailTitle">合成ページ</h2>
+            <button onclick="switchView('compositeList')">← 合成一覧に戻る</button>
+        </div>
+
+        <div class="form-section">
+            <h3>合成ページの概要（メモ・説明）</h3>
+            <div class="form-group">
+                <textarea id="compositeSummaryInput" placeholder="この合成ページ全体の目的や概要メモを入力..." style="height:80px;"></textarea>
+            </div>
+            <div style="text-align: right;">
+                <button type="button" class="btn-gold" onclick="saveCompositeSummary()" style="padding: 6px 14px; font-size:0.85rem;">概要メモを保存</button>
+            </div>
+        </div>
+
+        <div class="form-section" style="background: #e4d8c3;">
+            <h3>合成ステータス集計（自動計算）</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; text-align: center; margin-top: 8px;">
+                <div style="background:#faf6ef; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                    <div style="font-size:0.75rem; color:#666;">全体母数 合計</div>
+                    <div id="compTotalCount" style="font-size:1.1rem; font-weight:bold; color:var(--accent-purple);">0 項目</div>
+                </div>
+                <div style="background:#faf6ef; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                    <div style="font-size:0.75rem; color:#666;">習得レベル 合計値</div>
+                    <div id="compTotalScore" style="font-size:1.1rem; font-weight:bold; color:var(--accent-purple);">0.0 pt</div>
+                </div>
+                <div style="background:#faf6ef; padding:8px; border-radius:4px; border:1px solid var(--border-color);">
+                    <div style="font-size:0.75rem; color:#666;">達成割合</div>
+                    <div id="compTotalPercent" style="font-size:1.1rem; font-weight:bold; color:#388e3c;">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>全体習得レベル判定</h3>
+            <div id="compositeOverallStatus" class="auto-calc-box">未習得 (達成率: 0%)</div>
+        </div>
+
+        <div class="form-section">
+            <h3>構成能力一覧 <span style="font-size:0.8rem; font-weight:normal; color:#666;">（※クリックでそのスキルのページへドリルダウン）</span></h3>
+            <div id="compositeSkillsContainer">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>任意の必要とする能力案 <span style="font-size:0.8rem; font-weight:normal; color:#666;">（※内容の編集・削除が可能）</span></h3>
+            <div id="compositeOptionalSkillsContainer">
+                <!-- 動的生成 -->
+            </div>
+            <button type="button" onclick="addOptionalSkillField()" style="margin-top:5px; font-size:0.85rem; padding:6px 12px;">＋ 任意の能力案を追加</button>
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-gold" onclick="saveCompositeOptionalSkills()">任意の能力案を保存</button>
+        </div>
+    </div>
+
+    <!-- 分析画面 -->
+    <div id="analyticsView" class="page-sheet hidden">
+        <div class="tab-menu">
+            <h2>スキル分析ダッシュボード</h2>
+            <div class="analytics-controls">
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold; margin-right:4px;">表示区分:</label>
+                    <select id="analyticsMode" onchange="toggleAnalyticsMode()">
+                        <option value="week">週間表示 (日別)</option>
+                        <option value="month">月間表示 (日別)</option>
+                    </select>
+                </div>
+                <div id="weekPickerWrapper">
+                    <label style="font-size:0.8rem; font-weight:bold; margin-right:4px;">対象週(日始まり):</label>
+                    <input type="date" id="analyticsWeekDate" onchange="renderAnalytics()">
+                </div>
+                <div id="monthPickerWrapper" class="hidden">
+                    <label style="font-size:0.8rem; font-weight:bold; margin-right:4px;">対象月:</label>
+                    <input type="month" id="analyticsMonthDate" onchange="renderAnalytics()">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold; margin-right:4px;">円グラフの習得区分絞込:</label>
+                    <select id="analyticsStatusFilter" onchange="renderAnalytics()">
+                        <option value="">すべての区分</option>
+                        <option value="未習得">未習得</option>
+                        <option value="習得中">習得中</option>
+                        <option value="習得">習得</option>
+                        <option value="掌握">掌握</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="analytics-card">
+            <h3 id="regChartTitle">16. 登録数の推移（日付軸）</h3>
+            <div id="registrationChart" class="chart-bar-container">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+
+        <div class="analytics-card">
+            <h3 id="pieChartTitle">17. 分類別割合（選択中の習得区分対象）</h3>
+            <div id="categoryPieStats">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+
+        <div class="analytics-card">
+            <h3>18. 習得区分別判定（クリックで検索絞込）</h3>
+            <div id="statusChart" class="chart-bar-container">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 登録・編集画面 -->
+    <div id="formView" class="page-sheet hidden">
+        <div class="tab-menu">
+            <h2 id="formTitle">スキル詳細・登録</h2>
+            <button onclick="switchView('index')">← 目次に戻る</button>
+        </div>
+
+        <form id="skillForm" onsubmit="saveSkill(event)">
+            <input type="hidden" id="skillId">
+
+            <div class="form-section">
+                <h3>1. 能力概要</h3>
+                <div class="form-group">
+                    <div class="label-with-badge">
+                        <label>1. スキル名</label>
+                        <div id="headerStatusBadge"><span class="badge badge-none">未習得</span></div>
+                    </div>
+                    <input type="text" id="name" required placeholder="例：完全なる記憶術">
+                </div>
+                <div class="form-group">
+                    <label>2. スキルの分類</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="category" required style="flex-grow: 1;"></select>
+                        <button type="button" onclick="addNewCategoryInline()" style="white-space: nowrap; padding: 10px 12px; font-size: 0.85rem;">＋ 新規分類を追加</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>2-1. 合成区分</label>
+                    <div style="display: flex; gap: 15px; margin-bottom: 6px;">
+                        <label style="font-weight: normal; cursor: pointer;"><input type="radio" name="compositeTypeMode" value="existing" checked onclick="toggleCompositeInputMode()"> 登録済の区分から選択</label>
+                        <label style="font-weight: normal; cursor: pointer;"><input type="radio" name="compositeTypeMode" value="new" onclick="toggleCompositeInputMode()"> 新規登録</label>
+                    </div>
+                    <div id="compositeExistingWrapper">
+                        <select id="compositeCategoryExisting">
+                            <option value="">選択なし</option>
+                        </select>
+                    </div>
+                    <div id="compositeNewWrapper" class="hidden">
+                        <input type="text" id="compositeCategoryNew" placeholder="新しい合成区分名を入力...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>3. 習得日</label>
+                    <input type="date" id="acquisitionDate" required>
+                </div>
+                <div class="form-group">
+                    <label>4. スキルをもっている対象者名と対象者の説明</label>
+                    <textarea id="targetPerson" placeholder="例：A氏（〇〇の第一人者、熟練の思考プロセスの持ち主）"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>5. スキルの概要</label>
+                    <textarea id="summary" placeholder="このスキルがどのようなものか"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>6. スキルの詳細項目</label>
+                    <textarea id="details" placeholder="詳細なメカニズムや手順"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>2. スキル使用</h3>
+                <div class="form-group">
+                    <label>7. 発動条件</label>
+                    <textarea id="condition" placeholder="どのような状況・トリガーで使うか"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>8. スキルの使用の仕方</label>
+                    <textarea id="howToUse" placeholder="実践時の手順・アクション"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>9. スキルの制約</label>
+                    <textarea id="restriction" placeholder="制約・リスク・注意点"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>10. スキルの使用方法案（3項目）</label>
+                    <textarea id="useIdea1" placeholder="案1：..." style="margin-bottom:5px; height:50px;"></textarea>
+                    <textarea id="useIdea2" placeholder="案2：..." style="margin-bottom:5px; height:50px;"></textarea>
+                    <textarea id="useIdea3" placeholder="案3：..." style="height:50px;"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>3. スキル利用記録 & 判定（5項目・5点満点）</h3>
+                <div style="font-size:0.8rem; color:#666; margin-bottom:8px;">配点ルール：成功＝1点 / 保留＝0.5点 / 失敗・未実施＝0点</div>
+                <div class="form-group">
+                    <label>11. スキルを利用した項目（5項目）と結果</label>
+                    <div class="grid-3">
+                        <input type="text" id="useItem1" placeholder="利用項目1（例：議事録作成に適用）" oninput="calculateStatus()">
+                        <select id="useResult1" onchange="calculateStatus()">
+                            <option value="未実施">未実施 (0点)</option>
+                            <option value="成功">成功 (1点)</option>
+                            <option value="保留">保留 (0.5点)</option>
+                            <option value="失敗">失敗 (0点)</option>
+                        </select>
+                    </div>
+                    <div class="grid-3">
+                        <input type="text" id="useItem2" placeholder="利用項目2" oninput="calculateStatus()">
+                        <select id="useResult2" onchange="calculateStatus()">
+                            <option value="未実施">未実施 (0点)</option>
+                            <option value="成功">成功 (1点)</option>
+                            <option value="保留">保留 (0.5点)</option>
+                            <option value="失敗">失敗 (0点)</option>
+                        </select>
+                    </div>
+                    <div class="grid-3">
+                        <input type="text" id="useItem3" placeholder="利用項目3" oninput="calculateStatus()">
+                        <select id="useResult3" onchange="calculateStatus()">
+                            <option value="未実施">未実施 (0点)</option>
+                            <option value="成功">成功 (1点)</option>
+                            <option value="保留">保留 (0.5点)</option>
+                            <option value="失敗">失敗 (0点)</option>
+                        </select>
+                    </div>
+                    <div class="grid-3">
+                        <input type="text" id="useItem4" placeholder="利用項目4" oninput="calculateStatus()">
+                        <select id="useResult4" onchange="calculateStatus()">
+                            <option value="未実施">未実施 (0点)</option>
+                            <option value="成功">成功 (1点)</option>
+                            <option value="保留">保留 (0.5点)</option>
+                            <option value="失敗">失敗 (0点)</option>
+                        </select>
+                    </div>
+                    <div class="grid-3">
+                        <input type="text" id="useItem5" placeholder="利用項目5" oninput="calculateStatus()">
+                        <select id="useResult5" onchange="calculateStatus()">
+                            <option value="未実施">未実施 (0点)</option>
+                            <option value="成功">成功 (1点)</option>
+                            <option value="保留">保留 (0.5点)</option>
+                            <option value="失敗">失敗 (0点)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>12. 習得記録</label>
+                    <textarea id="learningRecord" placeholder="修練のプロセスや気づき"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>13. 習得判定項目（自動集計・達成率）</label>
+                    <div id="autoStatusDisplay" class="auto-calc-box">未習得 (達成率: 0%)</div>
+                    <input type="hidden" id="status" value="未習得">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>4. 検索用項目</h3>
+                <div class="form-group">
+                    <label>14. 栞区分</label>
+                    <select id="bookmark"></select>
+                </div>
+                <div class="form-group">
+                    <label>15. キーワード（5項目）</label>
+                    <div class="grid-5">
+                        <input type="text" id="keyword1" placeholder="キーワード1">
+                        <input type="text" id="keyword2" placeholder="キーワード2">
+                        <input type="text" id="keyword3" placeholder="キーワード3">
+                        <input type="text" id="keyword4" placeholder="キーワード4">
+                        <input type="text" id="keyword5" placeholder="キーワード5">
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" id="deleteBtn" class="hidden" style="background-color: #a93226;" onclick="deleteSkill()">このページを破棄（削除）</button>
+                <button type="button" id="duplicateFormBtn" class="hidden" style="background-color: #2980b9;" onclick="duplicateCurrentSkill()">このスキルをコピーして新規登録</button>
+                <button type="submit" class="btn-gold">登録</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 分類名・栞名設定モーダル -->
+<div id="settingsModal" class="page-sheet modal-content hidden">
+    <h3 style="color:var(--accent-purple); margin-top:0;">系統・栞の設定</h3>
+    
+    <div style="margin-bottom: 20px;">
+        <label style="font-weight: bold; color:var(--accent-purple); display:block; margin-bottom: 8px;">◆ 分類名カスタマイズ</label>
+        <div id="settingsCategoriesContainer" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- 動的生成 -->
+        </div>
+        <button type="button" onclick="addCategoryFieldInSettings()" style="margin-top:8px; font-size:0.85rem; padding:6px 10px;">＋ 分類枠を追加</button>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label style="font-weight: bold; color:var(--accent-purple); display:block; margin-bottom: 8px;">◆ 栞区分名カスタマイズ（最大5個）</label>
+        <div class="form-group"><label>栞 1</label><input type="text" id="bmName1" value="無し"></div>
+        <div class="form-group"><label>栞 2</label><input type="text" id="bmName2" value="最優先"></div>
+        <div class="form-group"><label>栞 3</label><input type="text" id="bmName3" value="実戦投入中"></div>
+        <div class="form-group"><label>栞 4</label><input type="text" id="bmName4" value="検証中"></div>
+        <div class="form-group"><label>栞 5</label><input type="text" id="bmName5" value="保管庫"></div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:15px;">
+        <button type="button" onclick="closeSettingsModal()">キャンセル</button>
+        <button type="button" class="btn-gold" onclick="saveSettings()">設定を保存</button>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY_SKILLS = "skill_hunter_master_data_v1";
+    const STORAGE_KEY_CATS = "skill_hunter_master_cats_v1";
+    const STORAGE_KEY_BMS = "skill_hunter_master_bms_v1";
+    const STORAGE_KEY_COMP_OPT = "skill_hunter_composite_options_v1";
+    const STORAGE_KEY_COMP_SUM = "skill_hunter_composite_summaries_v1";
+
+    function migrateOldData() {
+        const oldSkillKeys = ["skill_hunter_stable_data_v4", "skill_hunter_data_v3", "skill_hunter_data_v2", "skill_hunter_data"];
+        if (!localStorage.getItem(STORAGE_KEY_SKILLS)) {
+            for (let oldKey of oldSkillKeys) {
+                let oldData = localStorage.getItem(oldKey);
+                if (oldData) {
+                    localStorage.setItem(STORAGE_KEY_SKILLS, oldData);
+                    break;
+                }
+            }
+        }
+        const oldCatKeys = ["skill_hunter_stable_cats_v3", "skill_hunter_cats_v2", "skill_hunter_cats"];
+        if (!localStorage.getItem(STORAGE_KEY_CATS)) {
+            for (let oldKey of oldCatKeys) {
+                let oldData = localStorage.getItem(oldKey);
+                if (oldData) {
+                    localStorage.setItem(STORAGE_KEY_CATS, oldData);
+                    break;
+                }
+            }
+        }
+        const oldBmKeys = ["skill_hunter_stable_bms_v3", "skill_hunter_bms_v2", "skill_hunter_bms"];
+        if (!localStorage.getItem(STORAGE_KEY_BMS)) {
+            for (let oldKey of oldBmKeys) {
+                let oldData = localStorage.getItem(oldKey);
+                if (oldData) {
+                    localStorage.setItem(STORAGE_KEY_BMS, oldData);
+                    break;
+                }
+            }
+        }
+    }
+
+    let defaultCategories = ["強化", "変化", "操作", "放出", "具現化", "特質", "合成"];
+    let defaultBookmarks = ["無し", "最優先", "実戦投入中", "検証中", "保管庫"];
+
+    const categoryColors = ["#c5a059", "#4a2c40", "#2980b9", "#27ae60", "#e67e22", "#8e44ad", "#d35400", "#16a085", "#2c3e50", "#c0392b"];
+
+    function getCategories() {
+        let saved = localStorage.getItem(STORAGE_KEY_CATS);
+        if (saved) {
+            let cats = JSON.parse(saved);
+            if (!cats.includes("合成")) {
+                cats.push("合成");
+                localStorage.setItem(STORAGE_KEY_CATS, JSON.stringify(cats));
+            }
+            return cats;
+        }
+        return defaultCategories;
+    }
+
+    function getBookmarks() {
+        let saved = localStorage.getItem(STORAGE_KEY_BMS);
+        return saved ? JSON.parse(saved) : defaultBookmarks;
+    }
+
+    function getSkills() {
+        let saved = localStorage.getItem(STORAGE_KEY_SKILLS);
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    function saveSkills(skills) {
+        localStorage.setItem(STORAGE_KEY_SKILLS, JSON.stringify(skills));
+    }
+
+    function getCompositeOptionsMap() {
+        let saved = localStorage.getItem(STORAGE_KEY_COMP_OPT);
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    function saveCompositeOptionsMap(map) {
+        localStorage.setItem(STORAGE_KEY_COMP_OPT, JSON.stringify(map));
+    }
+
+    function getCompositeSummaryMap() {
+        let saved = localStorage.getItem(STORAGE_KEY_COMP_SUM);
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    function saveCompositeSummaryMap(map) {
+        localStorage.setItem(STORAGE_KEY_COMP_SUM, JSON.stringify(map));
+    }
+
+    function getCompositeCategories() {
+        let skills = getSkills();
+        let comps = [];
+        skills.forEach(s => {
+            if (s.compositeCategory && !comps.includes(s.compositeCategory.trim())) {
+                comps.push(s.compositeCategory.trim());
+            }
+        });
+        let optMap = getCompositeOptionsMap();
+        Object.keys(optMap).forEach(comp => {
+            if (!comps.includes(comp)) {
+                comps.push(comp);
+            }
+        });
+        return comps.sort();
+    }
+
+    window.onload = function() {
+        migrateOldData();
+        updateSelectors();
+        initAnalyticsPickers();
+        renderIndex();
+    };
+
+    function initAnalyticsPickers() {
+        let today = new Date();
+        let yyyy = today.getFullYear();
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let dd = String(today.getDate()).padStart(2, '0');
+        
+        let weekInput = document.getElementById("analyticsWeekDate");
+        if (!weekInput.value) weekInput.value = `${yyyy}-${mm}-${dd}`;
+
+        let monthInput = document.getElementById("analyticsMonthDate");
+        if (!monthInput.value) monthInput.value = `${yyyy}-${mm}`;
+    }
+
+    function toggleAnalyticsMode() {
+        let mode = document.getElementById("analyticsMode").value;
+        if (mode === 'week') {
+            document.getElementById("weekPickerWrapper").classList.remove("hidden");
+            document.getElementById("monthPickerWrapper").classList.add("hidden");
+        } else {
+            document.getElementById("weekPickerWrapper").classList.add("hidden");
+            document.getElementById("monthPickerWrapper").classList.remove("hidden");
+        }
+        renderAnalytics();
+    }
+
+    function switchView(viewName) {
+        document.getElementById("indexView").classList.add("hidden");
+        document.getElementById("compositeListView").classList.add("hidden");
+        document.getElementById("compositeDetailView").classList.add("hidden");
+        document.getElementById("analyticsView").classList.add("hidden");
+        document.getElementById("formView").classList.add("hidden");
+
+        document.getElementById("navIndexBtn").classList.remove("active");
+        document.getElementById("navCompositeListBtn").classList.remove("active");
+        document.getElementById("navAnalyticsBtn").classList.remove("active");
+
+        if (viewName === 'index') {
+            document.getElementById("indexView").classList.remove("hidden");
+            document.getElementById("navIndexBtn").classList.add("active");
+            renderIndex();
+        } else if (viewName === 'compositeList') {
+            document.getElementById("compositeListView").classList.remove("hidden");
+            document.getElementById("navCompositeListBtn").classList.add("active");
+            renderCompositeList();
+        } else if (viewName === 'compositeDetail') {
+            document.getElementById("compositeDetailView").classList.remove("hidden");
+            document.getElementById("navCompositeListBtn").classList.add("active");
+        } else if (viewName === 'analytics') {
+            document.getElementById("analyticsView").classList.remove("hidden");
+            document.getElementById("navAnalyticsBtn").classList.add("active");
+            renderAnalytics();
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function updateSelectors() {
+        let cats = getCategories();
+        let bms = getBookmarks();
+        let comps = getCompositeCategories();
+        
+        let filterSel = document.getElementById("filterCategory");
+        let currentFilterVal = filterSel.value;
+        filterSel.innerHTML = '<option value="">すべての系統</option>';
+        cats.forEach(c => {
+            filterSel.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+        });
+        filterSel.value = currentFilterVal;
+
+        let filterCompSel = document.getElementById("filterComposite");
+        let currentFilterCompVal = filterCompSel.value;
+        filterCompSel.innerHTML = '<option value="">すべての合成名</option>';
+        comps.forEach(comp => {
+            filterCompSel.innerHTML += `<option value="${escapeHtml(comp)}">${escapeHtml(comp)}</option>`;
+        });
+        filterCompSel.value = currentFilterCompVal;
+
+        let formSel = document.getElementById("category");
+        let currentFormCat = formSel.value;
+        formSel.innerHTML = '';
+        cats.forEach(c => {
+            formSel.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+        });
+        if (cats.includes(currentFormCat)) {
+            formSel.value = currentFormCat;
+        } else if (cats.length > 0) {
+            formSel.value = cats[0];
+        }
+
+        let compSel = document.getElementById("compositeCategoryExisting");
+        let currentCompVal = compSel.value;
+        compSel.innerHTML = '<option value="">選択なし</option>';
+        comps.forEach(comp => {
+            compSel.innerHTML += `<option value="${escapeHtml(comp)}">${escapeHtml(comp)}</option>`;
+        });
+        if (comps.includes(currentCompVal)) {
+            compSel.value = currentCompVal;
+        }
+
+        let filterBmSel = document.getElementById("filterBookmark");
+        let currentFilterBm = filterBmSel.value;
+        filterBmSel.innerHTML = '<option value="">すべての栞</option>';
+        bms.forEach(b => {
+            filterBmSel.innerHTML += `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`;
+        });
+        filterBmSel.value = currentFilterBm;
+
+        let formBmSel = document.getElementById("bookmark");
+        let currentFormBm = formBmSel.value;
+        formBmSel.innerHTML = '';
+        bms.forEach(b => {
+            formBmSel.innerHTML += `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`;
+        });
+        formBmSel.value = currentFormBm;
+    }
+
+    function toggleCompositeInputMode() {
+        let mode = document.querySelector('input[name="compositeTypeMode"]:checked').value;
+        let existingWrapper = document.getElementById("compositeExistingWrapper");
+        let newWrapper = document.getElementById("compositeNewWrapper");
+        if (mode === 'existing') {
+            existingWrapper.classList.remove("hidden");
+            newWrapper.classList.add("hidden");
+        } else {
+            existingWrapper.classList.add("hidden");
+            newWrapper.classList.remove("hidden");
+        }
+    }
+
+    function addNewCategoryInline() {
+        let newCatName = prompt("新規追加する分類名を入力してください：");
+        if (!newCatName) return;
+        newCatName = newCatName.trim();
+        if (!newCatName) return;
+
+        let cats = getCategories();
+        if (cats.includes(newCatName)) {
+            alert("その分類はすでに存在します。");
+            document.getElementById("category").value = newCatName;
+            return;
+        }
+
+        cats.push(newCatName);
+        localStorage.setItem(STORAGE_KEY_CATS, JSON.stringify(cats));
+        updateSelectors();
+        document.getElementById("category").value = newCatName;
+    }
+
+    function renderIndex() {
+        let skills = getSkills();
+        let fCat = document.getElementById("filterCategory").value;
+        let fComp = document.getElementById("filterComposite").value;
+        let fKeyword = document.getElementById("filterKeyword").value.toLowerCase();
+        let fBmark = document.getElementById("filterBookmark").value;
+
+        let tbody = document.getElementById("skillTableBody");
+        tbody.innerHTML = '';
+
+        let filtered = skills.filter(s => {
+            if (fCat && s.category !== fCat) return false;
+            if (fComp && (!s.compositeCategory || s.compositeCategory.trim() !== fComp)) return false;
+            if (fBmark && s.bookmark !== fBmark) return false;
+            if (fKeyword) {
+                let matchText = (s.name + " " + (s.compositeCategory || "") + " " + s.targetPerson + " " + s.summary + " " + (s.keywords || []).join(" ")).toLowerCase();
+                if (!matchText.includes(fKeyword)) return false;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#777; padding:20px;">登録されたスキルはまだありません。</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(s => {
+            let badgeClass = "badge-none";
+            if (s.status === "掌握") badgeClass = "badge-master";
+            else if (s.status === "習得") badgeClass = "badge-learned";
+            else if (s.status === "習得中") badgeClass = "badge-learning";
+
+            let defaultBmName = getBookmarks()[0] || "無し";
+            let isDisplayBm = s.bookmark && s.bookmark !== defaultBmName;
+
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})"><strong>${escapeHtml(s.name)}</strong></td>
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})">${escapeHtml(s.category)}</td>
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})">${escapeHtml(s.compositeCategory || "-")}</td>
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})">${escapeHtml(s.targetPerson || "-")}</td>
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})"><span class="badge ${badgeClass}">${s.status}</span></td>
+                <td class="clickable-item" onclick="openFormForEdit(${s.id})">${isDisplayBm ? '🔖 ' + escapeHtml(s.bookmark) : '-'}</td>
+                <td><button type="button" class="btn-gold" style="padding: 4px 8px; font-size: 0.8rem;" onclick="duplicateSkillById(${s.id})">📋 複製</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderCompositeList() {
+        let skills = getSkills();
+        let optMap = getCompositeOptionsMap();
+        let fKeyword = document.getElementById("filterCompositeKeyword").value.toLowerCase();
+        let tbody = document.getElementById("compositeTableBody");
+        tbody.innerHTML = '';
+
+        let compositeMap = {};
+        skills.forEach(s => {
+            let comp = s.compositeCategory ? s.compositeCategory.trim() : "";
+            if (comp) {
+                if (!compositeMap[comp]) compositeMap[comp] = [];
+                compositeMap[comp].push(s);
+            }
+        });
+
+        Object.keys(optMap).forEach(comp => {
+            if (optMap[comp] && optMap[comp].length > 0) {
+                if (!compositeMap[comp]) compositeMap[comp] = [];
+            }
+        });
+
+        let compositeNames = Object.keys(compositeMap).sort();
+        if (fKeyword) {
+            compositeNames = compositeNames.filter(name => name.toLowerCase().includes(fKeyword));
+        }
+
+        if (compositeNames.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777; padding:20px;">登録されている合成区分はありません。スキル編集画面または合成詳細画面で合成区分を設定してください。</td></tr>`;
+            return;
+        }
+
+        let summaryMap = getCompositeSummaryMap();
+
+        compositeNames.forEach(compName => {
+            let compSkills = compositeMap[compName];
+            let count = compSkills.length;
+
+            let catCounts = {};
+            compSkills.forEach(s => {
+                let cat = s.category || "未分類";
+                catCounts[cat] = (catCounts[cat] || 0) + 1;
+            });
+            let maxCat = "-";
+            let maxCatCount = -1;
+            for (let [cat, cnt] of Object.entries(catCounts)) {
+                if (cnt > maxCatCount) {
+                    maxCatCount = cnt;
+                    maxCat = cat;
+                }
+            }
+
+            let optList = optMap[compName] || [];
+            let totalItems = count + optList.length;
+
+            let totalScore = 0;
+            compSkills.forEach(s => {
+                let score = 0;
+                if (s.status === "掌握") score = 1.0;
+                else if (s.status === "習得") score = 0.75;
+                else if (s.status === "習得中") score = 0.25;
+                else score = 0.0;
+                totalScore += score;
+            });
+            optList.forEach(opt => {
+                let score = 0;
+                if (opt.status === "掌握") score = 1.0;
+                else if (opt.status === "習得") score = 0.75;
+                else if (opt.status === "習得中") score = 0.25;
+                else score = 0.0;
+                totalScore += score;
+            });
+
+            let percentage = totalItems > 0 ? Math.round((totalScore / totalItems) * 100) : 0;
+            let overallStatusText = "未習得";
+            if (percentage >= 80) overallStatusText = "掌握";
+            else if (percentage >= 50) overallStatusText = "習得";
+            else if (totalScore > 0) overallStatusText = "習得中";
+
+            let summaryText = summaryMap[compName] || (compSkills.length > 0 && compSkills[0].summary ? compSkills[0].summary : "-");
+            if (summaryText.length > 35) summaryText = summaryText.slice(0, 35) + "…";
+
+            let tr = document.createElement("tr");
+            tr.className = "clickable-item";
+            tr.onclick = () => openCompositeDetail(compName);
+            tr.innerHTML = `
+                <td><strong>${escapeHtml(compName)}</strong></td>
+                <td>${totalItems} 項目 (登録:${count} / 案:${optList.length})</td>
+                <td>${overallStatusText} (${percentage}%)</td>
+                <td>${escapeHtml(maxCat)} (${maxCatCount > 0 ? maxCatCount + '件' : '-'})</td>
+                <td>${escapeHtml(summaryText)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    let currentCompositeName = "";
+
+    function openCompositeDetail(compName) {
+        currentCompositeName = compName;
+        document.getElementById("compositeDetailTitle").innerText = `合成ページ: ${compName}`;
+        
+        let summaryMap = getCompositeSummaryMap();
+        document.getElementById("compositeSummaryInput").value = summaryMap[compName] || "";
+
+        let skills = getSkills();
+        let compSkills = skills.filter(s => s.compositeCategory && s.compositeCategory.trim() === compName);
+
+        let optMap = getCompositeOptionsMap();
+        let optList = optMap[compName] || [];
+        let totalItems = compSkills.length + optList.length;
+
+        let totalScore = 0;
+        compSkills.forEach(s => {
+            let score = 0;
+            if (s.status === "掌握") score = 1.0;
+            else if (s.status === "習得") score = 0.75;
+            else if (s.status === "習得中") score = 0.25;
+            else score = 0.0;
+            totalScore += score;
+        });
+        optList.forEach(opt => {
+            let score = 0;
+            if (opt.status === "掌握") score = 1.0;
+            else if (opt.status === "習得") score = 0.75;
+            else if (opt.status === "習得中") score = 0.25;
+            else score = 0.0;
+            totalScore += score;
+        });
+
+        let percentage = totalItems > 0 ? Math.round((totalScore / totalItems) * 100) : 0;
+        let overallStatusText = "未習得";
+        if (percentage >= 80) overallStatusText = "掌握";
+        else if (percentage >= 50) overallStatusText = "習得";
+        else if (totalScore > 0) overallStatusText = "習得中";
+
+        document.getElementById("compTotalCount").innerText = `${totalItems} 項目`;
+        document.getElementById("compTotalScore").innerText = `${totalScore.toFixed(2)} pt`;
+        document.getElementById("compTotalPercent").innerText = `${percentage}%`;
+
+        document.getElementById("compositeOverallStatus").innerText = `${overallStatusText} (達成率: ${percentage}% / 母数: 全 ${totalItems} 項目)`;
+
+        let container = document.getElementById("compositeSkillsContainer");
+        container.innerHTML = '';
+        if (compSkills.length === 0) {
+            container.innerHTML = `<p style="color:#777;">この合成に属する登録スキルはありません。</p>`;
+        } else {
+            compSkills.forEach(s => {
+                let badgeClass = "badge-none";
+                if (s.status === "掌握") badgeClass = "badge-master";
+                else if (s.status === "習得") badgeClass = "badge-learned";
+                else if (s.status === "習得中") badgeClass = "badge-learning";
+
+                let score = 0.0;
+                if (s.status === "掌握") score = 1.0;
+                else if (s.status === "習得") score = 0.75;
+                else if (s.status === "習得中") score = 0.25;
+
+                let card = document.createElement("div");
+                card.className = "composite-skill-card clickable-card";
+                card.title = `クリックして「${s.name}」のスキル詳細を開く`;
+                card.onclick = () => openFormForEdit(s.id);
+                card.innerHTML = `
+                    <div class="composite-skill-header">
+                        <strong>${escapeHtml(s.name)}</strong>
+                        <span class="badge ${badgeClass}">習得レベル: ${s.status}</span>
+                    </div>
+                    <div class="composite-skill-body">
+                        <p><strong>分類系統:</strong> ${escapeHtml(s.category)}</p>
+                        <p><strong>スキルの概要:</strong> ${escapeHtml(s.summary || "（未設定）")}</p>
+                        <p><strong>発動条件:</strong> ${escapeHtml(s.condition || "（未設定）")}</p>
+                        <p><strong>スキルの使用の仕方:</strong> ${escapeHtml(s.howToUse || "（未設定）")}</p>
+                        <p><strong>スキルの制約:</strong> ${escapeHtml(s.restriction || "（未設定）")}</p>
+                        <div><span class="composite-skill-score">配点: ${score.toFixed(2)} pt</span></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        renderOptionalSkillsUI(optList);
+        switchView('compositeDetail');
+    }
+
+    function saveCompositeSummary() {
+        if (!currentCompositeName) return;
+        let summaryText = document.getElementById("compositeSummaryInput").value;
+        let summaryMap = getCompositeSummaryMap();
+        summaryMap[currentCompositeName] = summaryText;
+        saveCompositeSummaryMap(summaryMap);
+        alert("合成ページの概要メモを保存しました。");
+    }
+
+    function renderOptionalSkillsUI(optList) {
+        let container = document.getElementById("compositeOptionalSkillsContainer");
+        container.innerHTML = '';
+        if (!optList || optList.length === 0) {
+            container.innerHTML = `<p style="color:#777; font-size:0.9rem;">任意の能力案はまだ追加されていません。</p>`;
+            return;
+        }
+
+        optList.forEach((opt) => {
+            let score = 0.0;
+            let status = opt.status || "未習得";
+            if (status === "掌握") score = 1.0;
+            else if (status === "習得") score = 0.75;
+            else if (status === "習得中") score = 0.25;
+
+            let card = document.createElement("div");
+            card.className = "composite-skill-card";
+            card.style.background = "#faf6ef";
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <input type="text" class="opt-name" value="${escapeHtml(opt.name || '')}" placeholder="任意の能力名" style="width:70%; font-weight:bold;">
+                    <select class="opt-status" style="width:25%;" onchange="updateOptCardScore(this)">
+                        <option value="未習得" ${status === '未習得' ? 'selected' : ''}>未習得</option>
+                        <option value="習得中" ${status === '習得中' ? 'selected' : ''}>習得中</option>
+                        <option value="習得" ${status === '習得' ? 'selected' : ''}>習得</option>
+                        <option value="掌握" ${status === '掌握' ? 'selected' : ''}>掌握</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">概要</label><textarea class="opt-summary" placeholder="スキルの概要">${escapeHtml(opt.summary || '')}</textarea></div>
+                <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">発動条件</label><textarea class="opt-condition" placeholder="発動条件">${escapeHtml(opt.condition || '')}</textarea></div>
+                <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">使用の仕方</label><textarea class="opt-howToUse" placeholder="使用の仕方">${escapeHtml(opt.howToUse || '')}</textarea></div>
+                <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">制約</label><textarea class="opt-restriction" placeholder="制約">${escapeHtml(opt.restriction || '')}</textarea></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                    <span class="composite-skill-score opt-score-display">配点: ${score.toFixed(2)} pt</span>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" onclick="saveCompositeOptionalSkills()" style="background-color:var(--accent-purple); font-size:0.8rem; padding:4px 10px;">この案を更新・保存</button>
+                        <button type="button" onclick="removeOptionalCard(this)" style="background-color:#a93226; font-size:0.8rem; padding:4px 8px;">削除</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function updateOptCardScore(selectElem) {
+        let card = selectElem.closest('.composite-skill-card');
+        let scoreDisplay = card.querySelector('.opt-score-display');
+        let status = selectElem.value;
+        let score = 0.0;
+        if (status === "掌握") score = 1.0;
+        else if (status === "習得") score = 0.75;
+        else if (status === "習得中") score = 0.25;
+        scoreDisplay.innerText = `配点: ${score.toFixed(2)} pt`;
+    }
+
+    function addOptionalSkillField() {
+        let container = document.getElementById("compositeOptionalSkillsContainer");
+        if (container.querySelector('p')) {
+            container.innerHTML = '';
+        }
+        let card = document.createElement("div");
+        card.className = "composite-skill-card";
+        card.style.background = "#faf6ef";
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <input type="text" class="opt-name" value="" placeholder="任意の能力名" style="width:70%; font-weight:bold;">
+                <select class="opt-status" style="width:25%;" onchange="updateOptCardScore(this)">
+                    <option value="未習得" selected>未習得</option>
+                    <option value="習得中">習得中</option>
+                    <option value="習得">習得</option>
+                    <option value="掌握">掌握</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">概要</label><textarea class="opt-summary" placeholder="スキルの概要"></textarea></div>
+            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">発動条件</label><textarea class="opt-condition" placeholder="発動条件"></textarea></div>
+            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">使用の仕方</label><textarea class="opt-howToUse" placeholder="使用の仕方"></textarea></div>
+            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.75rem;">制約</label><textarea class="opt-restriction" placeholder="制約"></textarea></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span class="composite-skill-score opt-score-display">配点: 0.00 pt</span>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" onclick="saveCompositeOptionalSkills()" style="background-color:var(--accent-purple); font-size:0.8rem; padding:4px 10px;">この案を更新・保存</button>
+                    <button type="button" onclick="removeOptionalCard(this)" style="background-color:#a93226; font-size:0.8rem; padding:4px 8px;">削除</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    }
+
+    function removeOptionalCard(btn) {
+        if (!confirm("この任意の能力案を削除しますか？")) return;
+        btn.closest('.composite-skill-card').remove();
+        saveCompositeOptionalSkills();
+    }
+
+    function saveCompositeOptionalSkills() {
+        if (!currentCompositeName) return;
+        let container = document.getElementById("compositeOptionalSkillsContainer");
+        let cards = container.querySelectorAll(".composite-skill-card");
+        let optList = [];
+
+        cards.forEach(card => {
+            let nameInput = card.querySelector(".opt-name");
+            if (nameInput) {
+                optList.push({
+                    name: nameInput.value,
+                    status: card.querySelector(".opt-status").value,
+                    summary: card.querySelector(".opt-summary").value,
+                    condition: card.querySelector(".opt-condition").value,
+                    howToUse: card.querySelector(".opt-howToUse").value,
+                    restriction: card.querySelector(".opt-restriction").value
+                });
+            }
+        });
+
+        let optMap = getCompositeOptionsMap();
+        optMap[currentCompositeName] = optList;
+        saveCompositeOptionsMap(optMap);
+
+        alert("任意の能力案を保存しました。");
+        openCompositeDetail(currentCompositeName);
+    }
+
+    function renderAnalytics() {
+        let skills = getSkills();
+        let mode = document.getElementById("analyticsMode").value;
+        let regChartContainer = document.getElementById("registrationChart");
+        regChartContainer.innerHTML = '';
+
+        let dateCounts = {};
+        let targetDates = [];
+
+        if (mode === 'week') {
+            let val = document.getElementById("analyticsWeekDate").value;
+            let targetDate = val ? new Date(val) : new Date();
+            let dayOfWeek = targetDate.getDay();
+            
+            let sunday = new Date(targetDate);
+            sunday.setDate(targetDate.getDate() - dayOfWeek);
+
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(sunday);
+                d.setDate(sunday.getDate() + i);
+                let yyyy = d.getFullYear();
+                let mm = String(d.getMonth() + 1).padStart(2, '0');
+                let dd = String(d.getDate()).padStart(2, '0');
+                let dateStr = `${yyyy}-${mm}-${dd}`;
+                targetDates.push(dateStr);
+                dateCounts[dateStr] = 0;
+            }
+            document.getElementById("regChartTitle").innerText = `16. 登録数の推移（週間：${targetDates[0]} 〜 ${targetDates[6]}）`;
+
+        } else {
+            let val = document.getElementById("analyticsMonthDate").value;
+            let targetDate = val ? new Date(val + "-01") : new Date();
+            let year = targetDate.getFullYear();
+            let month = targetDate.getMonth();
+
+            let lastDay = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 1; i <= lastDay; i++) {
+                let dd = String(i).padStart(2, '0');
+                let mm = String(month + 1).padStart(2, '0');
+                let dateStr = `${year}-${mm}-${dd}`;
+                targetDates.push(dateStr);
+                dateCounts[dateStr] = 0;
+            }
+            document.getElementById("regChartTitle").innerText = `16. 登録数の推移（月間：${year}年${month + 1}月）`;
+        }
+
+        skills.forEach(s => {
+            if (s.acquisitionDate && dateCounts.hasOwnProperty(s.acquisitionDate)) {
+                dateCounts[s.acquisitionDate]++;
+            }
+        });
+
+        let maxCount = Math.max(...Object.values(dateCounts), 1);
+
+        targetDates.forEach(dateStr => {
+            let count = dateCounts[dateStr];
+            let percentage = (count / maxCount) * 100;
+            let displayLabel = dateStr.slice(5);
+            let row = document.createElement("div");
+            row.className = "chart-row";
+            row.innerHTML = `
+                <div class="chart-label">${displayLabel}</div>
+                <div class="chart-bar-track">
+                    <div class="chart-bar-fill gold" style="width: ${percentage}%;"></div>
+                </div>
+                <div class="chart-value">${count}件</div>
+            `;
+            regChartContainer.appendChild(row);
+        });
+
+        let analyticsStatusFilter = document.getElementById("analyticsStatusFilter").value;
+        let pieTargetSkills = skills.filter(s => {
+            if (analyticsStatusFilter && s.status !== analyticsStatusFilter) return false;
+            return true;
+        });
+
+        let catStatsContainer = document.getElementById("categoryPieStats");
+        catStatsContainer.innerHTML = '';
+        let cats = getCategories();
+        let totalSkills = pieTargetSkills.length;
+
+        let catCounts = {};
+        cats.forEach(c => catCounts[c] = 0);
+        pieTargetSkills.forEach(s => {
+            if (catCounts.hasOwnProperty(s.category)) {
+                catCounts[s.category]++;
+            } else {
+                catCounts[s.category] = (catCounts[s.category] || 0) + 1;
+            }
+        });
+
+        let pieContainer = document.createElement("div");
+        pieContainer.className = "pie-container";
+
+        let svgWrapper = document.createElement("div");
+        svgWrapper.className = "pie-svg-wrapper";
+
+        if (totalSkills === 0) {
+            svgWrapper.innerHTML = `<svg viewBox="0 0 100 100" style="width:100%; height:100%;"><circle cx="50" cy="50" r="38" fill="none" stroke="#e4d8c3" stroke-width="24" /></svg>`;
+        } else {
+            let cumulativePercent = 0;
+            let svgContent = `<svg viewBox="0 0 100 100" style="width:100%; height:100%; transform: rotate(-90deg);">`;
+            let textOverlayContent = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;">`;
+
+            let i = 0;
+            for (let [catName, count] of Object.entries(catCounts)) {
+                if (count > 0) {
+                    let percent = (count / totalSkills) * 100;
+                    let color = categoryColors[i % categoryColors.length];
+                    
+                    svgContent += `<circle cx="50" cy="50" r="36" fill="transparent" stroke="${color}" stroke-width="22" stroke-dasharray="${percent * 2.26195} 226.195" stroke-dashoffset="-${cumulativePercent * 2.26195}" class="clickable-item" style="cursor:pointer;" onclick="filterByCategory('${escapeHtml(catName)}')"><title>${escapeHtml(catName)}: ${count}件 (${percent.toFixed(1)}%)</title></circle>`;
+
+                    let midPercent = cumulativePercent + (percent / 2);
+                    let angle = (midPercent / 100) * 2 * Math.PI;
+                    let radiusForText = 23;
+                    let x = 50 + radiusForText * Math.cos(angle);
+                    let y = 50 + radiusForText * Math.sin(angle);
+
+                    let fontSize = percent < 15 ? "6px" : "8px";
+                    let displayCatName = catName.length > 4 ? catName.slice(0, 4) + '…' : catName;
+
+                    textOverlayContent += `
+                        <div style="position:absolute; left:${x}%; top:${y}%; transform:translate(-50%, -50%); text-align:center; font-size:${fontSize}; font-weight:bold; color:#111; text-shadow: 0px 0px 2px #fff, 0px 0px 2px #fff, 0px 0px 2px #fff; white-space:nowrap; pointer-events:none;">
+                            ${escapeHtml(displayCatName)}<br><span style="font-size:7px; opacity:0.9;">${count}件</span>
+                        </div>
+                    `;
+
+                    cumulativePercent += percent;
+                }
+                i++;
+            }
+            svgContent += `</svg>`;
+            textOverlayContent += `</div>`;
+            svgWrapper.innerHTML = svgContent + textOverlayContent;
+        }
+        pieContainer.appendChild(svgWrapper);
+
+        let legendGrid = document.createElement("div");
+        legendGrid.className = "pie-legend-grid";
+
+        let indexColorIdx = 0;
+        for (let [catName, count] of Object.entries(catCounts)) {
+            let percentage = totalSkills > 0 ? ((count / totalSkills) * 100).toFixed(1) : 0.0;
+            let color = categoryColors[indexColorIdx % categoryColors.length];
+
+            let item = document.createElement("div");
+            item.className = "pie-legend-item clickable-item";
+            item.title = `クリックして「${catName}」で絞り込む`;
+            item.onclick = () => filterByCategory(catName);
+
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div class="pie-color-box" style="background-color: ${color};"></div>
+                    <strong>${escapeHtml(catName)}</strong>
+                </div>
+                <span style="font-size:0.85rem; color:#555;">${count}件 (${percentage}%)</span>
+            `;
+            legendGrid.appendChild(item);
+            indexColorIdx++;
+        }
+        pieContainer.appendChild(legendGrid);
+        catStatsContainer.appendChild(pieContainer);
+
+        let statusChartContainer = document.getElementById("statusChart");
+        statusChartContainer.innerHTML = '';
+
+        let statusList = ["未習得", "習得中", "習得", "掌握"];
+        let statusCounts = { "未習得": 0, "習得中": 0, "習得": 0, "掌握": 0 };
+        skills.forEach(s => {
+            if (statusCounts.hasOwnProperty(s.status)) {
+                statusCounts[s.status]++;
+            }
+        });
+
+        let maxStatusCount = Math.max(...Object.values(statusCounts), 1);
+
+        statusList.forEach(st => {
+            let count = statusCounts[st];
+            let percentage = (count / maxStatusCount) * 100;
+            let row = document.createElement("div");
+            row.className = "chart-row clickable-item";
+            row.style.padding = "4px";
+            row.title = `クリックして「${st}」のステータスで絞り込む`;
+            row.onclick = () => {
+                switchView('index');
+                document.getElementById("filterKeyword").value = st;
+                renderIndex();
+            };
+            row.innerHTML = `
+                <div class="chart-label"><strong>${st}</strong></div>
+                <div class="chart-bar-track">
+                    <div class="chart-bar-fill" style="width: ${percentage}%;"></div>
+                </div>
+                <div class="chart-value">${count}件</div>
+            `;
+            statusChartContainer.appendChild(row);
+        });
+    }
+
+    function filterByCategory(catName) {
+        switchView('index');
+        document.getElementById("filterCategory").value = catName;
+        renderIndex();
+    }
+
+    function openFormForNew() {
+        document.getElementById("indexView").classList.add("hidden");
+        document.getElementById("compositeListView").classList.add("hidden");
+        document.getElementById("compositeDetailView").classList.add("hidden");
+        document.getElementById("analyticsView").classList.add("hidden");
+        document.getElementById("formView").classList.remove("hidden");
+        document.getElementById("formTitle").innerText = "新規スキル登録";
+        document.getElementById("skillForm").reset();
+        document.getElementById("skillId").value = "";
+        document.getElementById("deleteBtn").classList.add("hidden");
+        document.getElementById("duplicateFormBtn").classList.add("hidden");
+
+        updateSelectors();
+
+        document.querySelector('input[name="compositeTypeMode"][value="existing"]').checked = true;
+        toggleCompositeInputMode();
+        document.getElementById("compositeCategoryExisting").value = "";
+        document.getElementById("compositeCategoryNew").value = "";
+
+        let today = new Date();
+        let yyyy = today.getFullYear();
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        let dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById("acquisitionDate").value = `${yyyy}-${mm}-${dd}`;
+
+        calculateStatus();
+        window.scrollTo(0, 0);
+    }
+
+    function openFormForEdit(id) {
+        let skills = getSkills();
+        let s = skills.find(item => item.id === id);
+        if (!s) return;
+
+        updateSelectors();
+
+        document.getElementById("indexView").classList.add("hidden");
+        document.getElementById("compositeListView").classList.add("hidden");
+        document.getElementById("compositeDetailView").classList.add("hidden");
+        document.getElementById("analyticsView").classList.add("hidden");
+        document.getElementById("formView").classList.remove("hidden");
+        document.getElementById("formTitle").innerText = "スキル詳細・編集";
+
+        document.getElementById("skillId").value = s.id;
+        document.getElementById("name").value = s.name || "";
+        document.getElementById("category").value = s.category || "";
+
+        let comps = getCompositeCategories();
+        let compVal = s.compositeCategory || "";
+        if (compVal && comps.includes(compVal)) {
+            document.querySelector('input[name="compositeTypeMode"][value="existing"]').checked = true;
+            document.getElementById("compositeCategoryExisting").value = compVal;
+            document.getElementById("compositeCategoryNew").value = "";
+        } else if (compVal) {
+            document.querySelector('input[name="compositeTypeMode"][value="new"]').checked = true;
+            document.getElementById("compositeCategoryExisting").value = "";
+            document.getElementById("compositeCategoryNew").value = compVal;
+        } else {
+            document.querySelector('input[name="compositeTypeMode"][value="existing"]').checked = true;
+            document.getElementById("compositeCategoryExisting").value = "";
+            document.getElementById("compositeCategoryNew").value = "";
+        }
+        toggleCompositeInputMode();
+
+        document.getElementById("acquisitionDate").value = s.acquisitionDate || "";
+        document.getElementById("targetPerson").value = s.targetPerson || "";
+        document.getElementById("summary").value = s.summary || "";
+        document.getElementById("details").value = s.details || "";
+        
+        document.getElementById("condition").value = s.condition || "";
+        document.getElementById("howToUse").value = s.howToUse || "";
+        document.getElementById("restriction").value = s.restriction || "";
+        
+        let ideas = s.useIdeas || ["", "", ""];
+        document.getElementById("useIdea1").value = ideas[0] || "";
+        document.getElementById("useIdea2").value = ideas[1] || "";
+        document.getElementById("useIdea3").value = ideas[2] || "";
+
+        let uItems = s.useItems || [{}, {}, {}, {}, {}];
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`useItem${i+1}`).value = uItems[i] && uItems[i].item ? uItems[i].item : "";
+            document.getElementById(`useResult${i+1}`).value = uItems[i] && uItems[i].result ? uItems[i].result : "未実施";
+        }
+
+        document.getElementById("learningRecord").value = s.learningRecord || "";
+        document.getElementById("bookmark").value = s.bookmark || getBookmarks()[0];
+
+        let kws = s.keywords || ["", "", "", "", ""];
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`keyword${i+1}`).value = kws[i] || "";
+        }
+
+        document.getElementById("deleteBtn").classList.remove("hidden");
+        document.getElementById("duplicateFormBtn").classList.remove("hidden");
+        calculateStatus();
+        window.scrollTo(0, 0);
+    }
+
+    function duplicateSkillById(id) {
+        openFormForEdit(id);
+        document.getElementById("skillId").value = "";
+        document.getElementById("formTitle").innerText = "スキル複製・新規登録";
+        let nameInput = document.getElementById("name");
+        nameInput.value = nameInput.value + "のコピー";
+        document.getElementById("deleteBtn").classList.add("hidden");
+        document.getElementById("duplicateFormBtn").classList.add("hidden");
+        window.scrollTo(0, 0);
+    }
+
+    function duplicateCurrentSkill() {
+        let currentId = document.getElementById("skillId").value;
+        if (currentId) {
+            duplicateSkillById(Number(currentId));
+        }
+    }
+
+    function calculateStatus() {
+        let results = [];
+        for (let i = 1; i <= 5; i++) {
+            results.push(document.getElementById(`useResult${i}`).value);
+        }
+
+        let totalScore = 0;
+        results.forEach(r => {
+            if (r === "成功") totalScore += 1.0;
+            else if (r === "保留") totalScore += 0.5;
+            else totalScore += 0.0;
+        });
+
+        let maxScore = 5.0;
+        let percentage = Math.round((totalScore / maxScore) * 100);
+
+        let statusText = "未習得";
+        if (percentage >= 80) {
+            statusText = "掌握";
+        } else if (percentage >= 50) {
+            statusText = "習得";
+        } else if (totalScore > 0) {
+            statusText = "習得中";
+        } else {
+            statusText = "未習得";
+        }
+
+        let disp = document.getElementById("autoStatusDisplay");
+        disp.innerText = `${statusText} (達成率: ${percentage}% / スコア: ${totalScore}/5点)`;
+        document.getElementById("status").value = statusText;
+
+        let badgeClass = "badge-none";
+        if (statusText === "掌握") badgeClass = "badge-master";
+        else if (statusText === "習得") badgeClass = "badge-learned";
+        else if (statusText === "習得中") badgeClass = "badge-learning";
+
+        document.getElementById("headerStatusBadge").innerHTML = `<span class="badge ${badgeClass}">${statusText}</span>`;
+    }
+
+    function saveSkill(e) {
+        e.preventDefault();
+        let id = document.getElementById("skillId").value;
+        let skills = getSkills();
+
+        let compMode = document.querySelector('input[name="compositeTypeMode"]:checked').value;
+        let compositeCategoryVal = "";
+        if (compMode === 'existing') {
+            compositeCategoryVal = document.getElementById("compositeCategoryExisting").value.trim();
+        } else {
+            compositeCategoryVal = document.getElementById("compositeCategoryNew").value.trim();
+        }
+
+        let data = {
+            id: id ? Number(id) : Date.now(),
+            name: document.getElementById("name").value,
+            category: document.getElementById("category").value,
+            compositeCategory: compositeCategoryVal,
+            acquisitionDate: document.getElementById("acquisitionDate").value,
+            targetPerson: document.getElementById("targetPerson").value,
+            summary: document.getElementById("summary").value,
+            details: document.getElementById("details").value,
+            condition: document.getElementById("condition").value,
+            howToUse: document.getElementById("howToUse").value,
+            restriction: document.getElementById("restriction").value,
+            useIdeas: [
+                document.getElementById("useIdea1").value,
+                document.getElementById("useIdea2").value,
+                document.getElementById("useIdea3").value
+            ],
+            useItems: [
+                { item: document.getElementById("useItem1").value, result: document.getElementById("useResult1").value },
+                { item: document.getElementById("useItem2").value, result: document.getElementById("useResult2").value },
+                { item: document.getElementById("useItem3").value, result: document.getElementById("useResult3").value },
+                { item: document.getElementById("useItem4").value, result: document.getElementById("useResult4").value },
+                { item: document.getElementById("useItem5").value, result: document.getElementById("useResult5").value }
+            ],
+            learningRecord: document.getElementById("learningRecord").value,
+            status: document.getElementById("status").value,
+            bookmark: document.getElementById("bookmark").value,
+            keywords: [
+                document.getElementById("keyword1").value,
+                document.getElementById("keyword2").value,
+                document.getElementById("keyword3").value,
+                document.getElementById("keyword4").value,
+                document.getElementById("keyword5").value
+            ]
+        };
+
+        if (id) {
+            let index = skills.findIndex(item => item.id == id);
+            if (index !== -1) skills[index] = data;
+        } else {
+            skills.push(data);
+        }
+
+        saveSkills(skills);
+        switchView('index');
+    }
+
+    function deleteSkill() {
+        if (!confirm("本当にこのページを破棄しますか？")) return;
+        let realId = document.getElementById("skillId").value;
+        let skills = getSkills();
+        skills = skills.filter(item => item.id != realId);
+        saveSkills(skills);
+        switchView('index');
+    }
+
+    function openSettingsModal() {
+        let cats = getCategories();
+        let container = document.getElementById("settingsCategoriesContainer");
+        container.innerHTML = '';
+        cats.forEach((c, idx) => {
+            container.innerHTML += `
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="catInput_${idx}" value="${escapeHtml(c)}" style="flex-grow:1; padding:8px; border:1px solid var(--border-color); border-radius:3px;">
+                    <button type="button" onclick="removeCategoryFieldInSettings(${idx})" style="background-color:#a93226; padding:8px 10px; font-size:0.8rem;">削除</button>
+                </div>
+            `;
+        });
+
+        let bms = getBookmarks();
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`bmName${i+1}`).value = bms[i] || "";
+        }
+
+        document.getElementById("settingsModal").classList.remove("hidden");
+    }
+
+    function addCategoryFieldInSettings() {
+        let container = document.getElementById("settingsCategoriesContainer");
+        let idx = container.children.length;
+        let div = document.createElement("div");
+        div.style.cssText = "display:flex; gap:8px; align-items:center;";
+        div.innerHTML = `
+            <input type="text" id="catInput_${idx}" value="" placeholder="新しい分類名" style="flex-grow:1; padding:8px; border:1px solid var(--border-color); border-radius:3px;">
+            <button type="button" onclick="this.parentElement.remove()" style="background-color:#a93226; padding:8px 10px; font-size:0.8rem;">削除</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeCategoryFieldInSettings(idx) {
+        let input = document.getElementById(`catInput_${idx}`);
+        if (input && input.parentElement) {
+            input.parentElement.remove();
+        }
+    }
+
+    function closeSettingsModal() {
+        document.getElementById("settingsModal").classList.add("hidden");
+    }
+
+    function saveSettings() {
+        let container = document.getElementById("settingsCategoriesContainer");
+        let inputs = container.querySelectorAll("input[type='text']");
+        let newCats = [];
+        inputs.forEach(inp => {
+            let val = inp.value.trim();
+            if (val && !newCats.includes(val)) {
+                newCats.push(val);
+            }
+        });
+
+        if (newCats.length === 0) {
+            newCats = ["強化", "合成"];
+        }
+        localStorage.setItem(STORAGE_KEY_CATS, JSON.stringify(newCats));
+
+        let newBms = [];
+        for (let i = 0; i < 5; i++) {
+            let val = document.getElementById(`bmName${i+1}`).value.trim();
+            if (val) newBms.push(val);
+        }
+        if (newBms.length === 0) newBms = ["無し"];
+        localStorage.setItem(STORAGE_KEY_BMS, JSON.stringify(newBms));
+
+        closeSettingsModal();
+        updateSelectors();
+        renderIndex();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&'`"<>]/g, function(match) {
+            return {
+                '&': '&amp;',
+                "'": '&#x27;',
+                '`': '&#x60;',
+                '"': '&quot;',
+                '<': '&lt;',
+                '>': '&gt;',
+            }[match]
+        });
+    }
+</script>
+
+</body>
+</html>
